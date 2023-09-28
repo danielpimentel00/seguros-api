@@ -16,13 +16,6 @@ namespace seguros_restapi.Services
             try
             {
                 //obtener cliente por el codigo de cliente
-                //si no existe, lo creo
-                //si existe, actualizo su data
-                //valido si procede la solicitud
-                //si procede, creo la solicitud con estado aprobada, y creo la poliza
-                //si no procede, creo la solicitud con estado rechazada
-                //retorno SolicitudDto con el estado correspondiente
-
                 var customer = await context.Clientes.Where(x => x.Codigo == model.CedulaCliente).FirstOrDefaultAsync();
                 Cliente customer2 = new Cliente
                 {
@@ -37,18 +30,50 @@ namespace seguros_restapi.Services
 
                 transaction = context.Database.BeginTransaction();
 
-                if(customer == null)
+                //si no existe, lo creo
+                if (customer == null)
                 {
                     await context.Clientes.AddAsync(customer2);
                 } else
                 {
-                    context.Clientes.Update(customer2);
+                    context.Clientes.Update(customer2); //si existe, actualizo su data
                 }
 
+                //valido si procede la solicitud
                 var validatedRequest = await ValidateSolicitud(model);
 
-                if(validatedRequest.CodigoEstado == (int)Utils.EstadosSolicitud.Aprobado)
+                //si procede
+                if (validatedRequest.CodigoEstado == (int)Utils.EstadosSolicitud.Aprobado)
                 {
+                    var polizasCliente = await context.Polizas
+                        .Join(context.Solicitudes,
+                        poliza => poliza.IdSolicitud,
+                        solicitud => solicitud.Id,
+                        (poliza, solicitud) => new
+                        {
+                            solicitud.CodigoCliente,
+                            CodigoPoliza = poliza.Codigo,
+                            IdSolicitud = solicitud.Id,
+                        })
+                        .Where(x => x.CodigoCliente == validatedRequest.CedulaCliente)
+                        .ToListAsync();
+
+                    //y el cliente ya tiene una poliza, elimino dicha poliza
+                    if (polizasCliente.Count > 0)
+                    {
+                        var polizasAEliminar = polizasCliente
+                            .Select(x => new Poliza
+                            {
+                                Codigo = x.CodigoPoliza,
+                                IdSolicitud = x.IdSolicitud
+                            })
+                            .ToList();
+
+                        context.Polizas.RemoveRange(polizasAEliminar);
+                        await context.SaveChangesAsync();
+                    }
+
+                    //creo la solicitud con estado aprobada
                     var solicitud = (await context.Solicitudes.AddAsync(new Solicitude
                     {
                         CodigoEstado = validatedRequest.CodigoEstado,
@@ -59,12 +84,14 @@ namespace seguros_restapi.Services
 
                     await context.SaveChangesAsync();
 
+                    //y creo la nueva poliza
                     await context.Polizas.AddAsync(new Poliza
                     {
                         Codigo = $"{validatedRequest.CodigoSeguro}-{validatedRequest.CodigoPlan}-{GetNextSequenceNumber()}",
                         IdSolicitud = solicitud.Id,
                     });
-                } else
+                }
+                else //si no procede, creo la solicitud con estado rechazada
                 {
                     await context.Solicitudes.AddAsync(new Solicitude
                     {

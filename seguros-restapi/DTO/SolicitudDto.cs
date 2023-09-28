@@ -2,7 +2,7 @@
 {
     public class SolicitudDto
     {
-        public string CodigoCliente { get; set; } = null!;
+        public string CedulaCliente { get; set; } = null!;
 
         public string NombreCliente { get; set; } = null!;
 
@@ -19,5 +19,9 @@
         public string CodigoSeguro { get; set; } = null!;
 
         public string CodigoPlan { get; set; } = null!;
+
+        public int CodigoEstado { get; set; }
+
+        public string? RejectionReason { get; set; }
     }
 }

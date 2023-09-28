@@ -15,5 +15,9 @@ public partial class Plane
 
     public int MaxEdad { get; set; }
 
+    public string? CodigoSeguro { get; set; }
+
+    public virtual Seguro? CodigoSeguroNavigation { get; set; }
+
     public virtual ICollection<Solicitude> Solicitudes { get; set; } = new List<Solicitude>();
 }

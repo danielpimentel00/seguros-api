@@ -9,5 +9,7 @@ public partial class Poliza
 
     public int IdSolicitud { get; set; }
 
+    public DateTime FechaVenta { get; set; }
+
     public virtual Solicitude IdSolicitudNavigation { get; set; } = null!;
 }

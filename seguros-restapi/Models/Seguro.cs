@@ -9,6 +9,8 @@ public partial class Seguro
 
     public string Nombre { get; set; } = null!;
 
+    public virtual ICollection<Plane> Planes { get; set; } = new List<Plane>();
+
     public virtual ICollection<ProductosPermitido> ProductosPermitidos { get; set; } = new List<ProductosPermitido>();
 
     public virtual ICollection<Solicitude> Solicitudes { get; set; } = new List<Solicitude>();

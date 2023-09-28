@@ -1,20 +1,21 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using seguros_restapi.Services;
 
 namespace seguros_restapi.Controllers
 {
     [Route("[controller]")]
     [ApiController]
-    public class CustomerController : ControllerBase
+    public class PolizaController : ControllerBase
     {
-        private readonly CustomerService customerService = new();
-        
+        private readonly PolizaService polizaService = new();
+
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetById(string id)
+        public async Task<IActionResult> Get([FromRoute] string id)
         {
             try
             {
-                var result = await customerService.GetCustomerById(id);
+                var result = await polizaService.GetCustomerPolizas(id);
                 return Ok(result);
             }
             catch (Exception)

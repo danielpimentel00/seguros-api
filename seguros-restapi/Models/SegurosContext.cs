@@ -97,6 +97,10 @@ public partial class SegurosContext : DbContext
                 .HasMaxLength(3)
                 .IsUnicode(false)
                 .HasColumnName("codigo");
+            entity.Property(e => e.CodigoSeguro)
+                .HasMaxLength(3)
+                .IsUnicode(false)
+                .HasColumnName("codigo_seguro");
             entity.Property(e => e.Cuota)
                 .HasColumnType("decimal(10, 2)")
                 .HasColumnName("cuota");
@@ -106,6 +110,10 @@ public partial class SegurosContext : DbContext
                 .HasMaxLength(15)
                 .IsUnicode(false)
                 .HasColumnName("nombre");
+
+            entity.HasOne(d => d.CodigoSeguroNavigation).WithMany(p => p.Planes)
+                .HasForeignKey(d => d.CodigoSeguro)
+                .HasConstraintName("FK__planes__codigo_s__4E88ABD4");
         });
 
         modelBuilder.Entity<Poliza>(entity =>
@@ -118,6 +126,9 @@ public partial class SegurosContext : DbContext
                 .HasMaxLength(15)
                 .IsUnicode(false)
                 .HasColumnName("codigo");
+            entity.Property(e => e.FechaVenta)
+                .HasColumnType("date")
+                .HasColumnName("fecha_venta");
             entity.Property(e => e.IdSolicitud).HasColumnName("id_solicitud");
 
             entity.HasOne(d => d.IdSolicitudNavigation).WithMany(p => p.Polizas)

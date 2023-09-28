@@ -2,5 +2,10 @@
 {
     public class Utils
     {
+        public enum EstadosSolicitud
+        {
+            Aprobado = 1,
+            Rechazado
+        }
     }
 }
