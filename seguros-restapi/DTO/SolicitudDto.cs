@@ -23,5 +23,9 @@
         public int CodigoEstado { get; set; }
 
         public string? RejectionReason { get; set; }
+
+        public string NumeroPoliza { get; set; } = null!;
+
+        public decimal Cuota { get; set; }
     }
 }

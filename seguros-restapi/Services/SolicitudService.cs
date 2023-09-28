@@ -36,8 +36,17 @@ namespace seguros_restapi.Services
                     await context.Clientes.AddAsync(customer2);
                 } else
                 {
-                    context.Clientes.Update(customer2); //si existe, actualizo su data
+                    customer.FechaNac = model.FechaNacCliente;
+                    customer.IdTipoCuenta = model.IdTipoCuenta;
+                    customer.Nombre = model.NombreCliente;
+                    customer.NumeroCuenta = model.NumeroCuenta;
+                    customer.PrimerApellido = model.PrimerApellidoCliente;
+                    customer.SegundoApellido = model.SegundoApellidoCliente;
+
+                    context.Clientes.Update(customer); //si existe, actualizo su data
                 }
+
+                await context.SaveChangesAsync();
 
                 //valido si procede la solicitud
                 var validatedRequest = await ValidateSolicitud(model);
@@ -85,11 +94,14 @@ namespace seguros_restapi.Services
                     await context.SaveChangesAsync();
 
                     //y creo la nueva poliza
-                    await context.Polizas.AddAsync(new Poliza
+                    var poliza = (await context.Polizas.AddAsync(new Poliza
                     {
                         Codigo = $"{validatedRequest.CodigoSeguro}-{validatedRequest.CodigoPlan}-{GetNextSequenceNumber()}",
                         IdSolicitud = solicitud.Id,
-                    });
+                        FechaVenta = DateTime.Now
+                    })).Entity;
+
+                    validatedRequest.NumeroPoliza = poliza.Codigo;
                 }
                 else //si no procede, creo la solicitud con estado rechazada
                 {
@@ -103,6 +115,16 @@ namespace seguros_restapi.Services
                 }
 
                 await context.SaveChangesAsync();
+
+                var plan = await context.Planes
+                    .Where(x => x.Codigo == validatedRequest.CodigoPlan)
+                    .FirstOrDefaultAsync();
+
+                if(plan != null)
+                {
+                    validatedRequest.Cuota = plan.Cuota;
+                }
+
                 transaction.Commit();
 
                 return validatedRequest;
